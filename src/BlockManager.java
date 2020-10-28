@@ -5,12 +5,8 @@ import common.*;
  * Class BlockManager
  * Implements character block "manager" and does twists with threads.
  *
- * @author Serguei A. Mokhov, mokhov@cs.concordia.ca;
- * Inspired by previous code by Prof. D. Probst
- *
- * $Revision: 1.5 $
- * $Last Revision Date: 2019/07/02 $
-
+ * Karim Rhoualem
+ * Student 26603157
  */
 public class BlockManager
 {
@@ -32,7 +28,7 @@ public class BlockManager
     /**
      * For atomicity
      */
-    //private static Semaphore mutex = new Semaphore(...);
+    private static Semaphore mutex = new Semaphore(1);
 
     /*
      * For synchronization
@@ -56,10 +52,10 @@ public class BlockManager
         try
         {
             // Some initial stats...
-            System.out.println("Main thread starts executing.");
-            System.out.println("Initial value of top = " + soStack.getITop() + ".");
-            System.out.println("Initial value of stack top = " + soStack.pick() + ".");
-            System.out.println("Main thread will now fork several threads.");
+            System.out.println("[Main] Main thread starts executing.");
+            System.out.println("[Main] Initial value of top = " + soStack.getITop() + ".");
+            System.out.println("[Main] Initial value of stack top = " + soStack.pick() + ".");
+            System.out.println("[Main] Main thread will now fork several threads.");
 
             /*
              * The birth of threads
@@ -68,13 +64,13 @@ public class BlockManager
             AcquireBlock ab2 = new AcquireBlock();
             AcquireBlock ab3 = new AcquireBlock();
 
-            System.out.println("main(): Three AcquireBlock threads have been created.");
+            System.out.println("[Main] main(): Three AcquireBlock threads have been created.");
 
             ReleaseBlock rb1 = new ReleaseBlock();
             ReleaseBlock rb2 = new ReleaseBlock();
             ReleaseBlock rb3 = new ReleaseBlock();
 
-            System.out.println("main(): Three ReleaseBlock threads have been created.");
+            System.out.println("[Main] main(): Three ReleaseBlock threads have been created.");
 
             // Create an array object first
             CharStackProber	aStackProbers[] = new CharStackProber[NUM_PROBERS];
@@ -83,7 +79,7 @@ public class BlockManager
             for(int i = 0; i < NUM_PROBERS; i++)
                 aStackProbers[i] = new CharStackProber();
 
-            System.out.println("main(): CharStackProber threads have been created: " + NUM_PROBERS);
+            System.out.println("[Main] main(): CharStackProber threads have been created: " + NUM_PROBERS);
 
             /*
              * Twist 'em all
@@ -99,7 +95,7 @@ public class BlockManager
             aStackProbers[3].start();
             rb3.start();
 
-            System.out.println("main(): All the threads are ready.");
+            System.out.println("[Main] main(): All the threads are ready.");
 
             /*
              * Wait by here for all forked threads to die
@@ -116,17 +112,17 @@ public class BlockManager
                 aStackProbers[i].join();
 
             // Some final stats after all the child threads terminated...
-            System.out.println("System terminates normally.");
-            System.out.println("Final value of top = " + soStack.getITop() + ".");
-            System.out.println("Final value of stack top = " + soStack.pick() + ".");
-            System.out.println("Final value of stack top-1 = " + soStack.getAt(soStack.getITop() - 1) + ".");
-            System.out.println("Stack access count = " + soStack.getAccessCounterStack());
+            System.out.println("[Main] System terminates normally.");
+            System.out.println("[Main] Final value of top = " + soStack.getITop() + ".");
+            System.out.println("[Main] Final value of stack top = " + soStack.pick() + ".");
+            System.out.println("[Main] Final value of stack top-1 = " + soStack.getAt(soStack.getITop() - 1) + ".");
+            System.out.println("[Main] Stack access count = " + soStack.getStackAccessCounter());
 
             System.exit(0);
         }
         catch(InterruptedException e)
         {
-            System.err.println("Caught InterruptedException (internal error): " + e.getMessage());
+            System.err.println("[Main] Caught InterruptedException (internal error): " + e.getMessage());
             e.printStackTrace(System.err);
         }
         catch(Exception e)
@@ -153,7 +149,7 @@ public class BlockManager
 
         public void run()
         {
-            System.out.println("AcquireBlock thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] starts executing.");
 
 
             phase1();
@@ -161,28 +157,32 @@ public class BlockManager
 
             try
             {
-                System.out.println("AcquireBlock thread [TID=" + this.iTID + "] requests Ms block.");
+                mutex.Wait();
+
+                System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] requests Ms block.");
 
                 this.cCopy = soStack.pop();
 
                 System.out.println
                         (
-                                "AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
+                                "[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
                                         " from position " + (soStack.getITop() + 1) + "."
                         );
 
 
                 System.out.println
                         (
-                                "Acq[TID=" + this.iTID + "]: Current value of top = " +
+                                "[AcquireBlock] Acq[TID=" + this.iTID + "]: Current value of top = " +
                                         soStack.getITop() + "."
                         );
 
                 System.out.println
                         (
-                                "Acq[TID=" + this.iTID + "]: Current value of stack top = " +
+                                "[AcquireBlock] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
                                         soStack.pick() + "."
                         );
+
+                mutex.Signal();
             }
             catch(Exception e)
             {
@@ -193,7 +193,7 @@ public class BlockManager
             phase2();
 
 
-            System.out.println("AcquireBlock thread [TID=" + this.iTID + "] terminates.");
+            System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] terminates.");
         }
     } // class AcquireBlock
 
@@ -210,7 +210,7 @@ public class BlockManager
 
         public void run()
         {
-            System.out.println("ReleaseBlock thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println("[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] starts executing.");
 
 
             phase1();
@@ -218,13 +218,15 @@ public class BlockManager
 
             try
             {
-                if(soStack.isEmpty() == false)
-                    this.cBlock = (char)(soStack.pick() + 1);
+                mutex.Wait();
 
+                if(!soStack.isEmpty()) {
+                    this.cBlock = (char)(soStack.pick() + 1);
+                }
 
                 System.out.println
                         (
-                                "ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
+                                "[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
                                         " to position " + (soStack.getITop() + 1) + "."
                         );
 
@@ -232,15 +234,17 @@ public class BlockManager
 
                 System.out.println
                         (
-                                "Rel[TID=" + this.iTID + "]: Current value of top = " +
+                                "[ReleaseBlock] Rel[TID=" + this.iTID + "]: Current value of top = " +
                                         soStack.getITop() + "."
                         );
 
                 System.out.println
                         (
-                                "Rel[TID=" + this.iTID + "]: Current value of stack top = " +
+                                "[ReleaseBlock] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
                                         soStack.pick() + "."
                         );
+
+                mutex.Signal();
             }
             catch(Exception e)
             {
@@ -252,7 +256,7 @@ public class BlockManager
             phase2();
 
 
-            System.out.println("ReleaseBlock thread [TID=" + this.iTID + "] terminates.");
+            System.out.println("[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] terminates.");
         }
     } // class ReleaseBlock
 
@@ -266,12 +270,13 @@ public class BlockManager
         {
             phase1();
 
-
             try
             {
+                mutex.Wait();
+
                 for(int i = 0; i < siThreadSteps; i++)
                 {
-                    System.out.print("Stack Prober [TID=" + this.iTID + "]: Stack state: ");
+                    System.out.print("[CharStackProber] Stack Prober [TID=" + this.iTID + "]: Stack state: ");
 
                     // [s] - means ordinay slot of a stack
                     // (s) - current top of the stack
@@ -286,6 +291,8 @@ public class BlockManager
                     System.out.println(".");
 
                 }
+
+                mutex.Signal();
             }
             catch(Exception e)
             {
@@ -293,9 +300,7 @@ public class BlockManager
                 System.exit(1);
             }
 
-
             phase2();
-
         }
     } // class CharStackProber
 
