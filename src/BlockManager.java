@@ -191,6 +191,7 @@ public class BlockManager
             }
 
             s1.Wait();
+            System.out.println("[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE I.");
             s2.Signal();
             phase2();
 
