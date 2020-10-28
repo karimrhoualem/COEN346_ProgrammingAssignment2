@@ -37,13 +37,13 @@ public class BlockManager
     /**
      * s1 is to make sure phase I for all is done before any phase II begins
      */
-    //private static Semaphore s1 = new Semaphore(...);
+    private static Semaphore s1 = new Semaphore(-10 + 2);
 
     /**
      * s2 is for use in conjunction with Thread.turnTestAndSet() for phase II proceed
      * in the thread creation order
      */
-    //private static Semaphore s2 = new Semaphore(...);
+    private static Semaphore s2 = new Semaphore();
 
 
     // The main()
@@ -108,8 +108,9 @@ public class BlockManager
             rb2.join();
             rb3.join();
 
-            for(int i = 0; i < NUM_PROBERS; i++)
+            for(int i = 0; i < NUM_PROBERS; i++) {
                 aStackProbers[i].join();
+            }
 
             // Some final stats after all the child threads terminated...
             System.out.println("[Main] System terminates normally.");
@@ -151,9 +152,8 @@ public class BlockManager
         {
             System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] starts executing.");
 
-
             phase1();
-
+            s1.Signal();
 
             try
             {
@@ -190,8 +190,9 @@ public class BlockManager
                 System.exit(1);
             }
 
+            s1.Wait();
+            s2.Signal();
             phase2();
-
 
             System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] terminates.");
         }
@@ -212,9 +213,8 @@ public class BlockManager
         {
             System.out.println("[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] starts executing.");
 
-
             phase1();
-
+            s1.Signal();
 
             try
             {
@@ -252,7 +252,8 @@ public class BlockManager
                 System.exit(1);
             }
 
-
+            s2.Wait();
+            s2.Signal();
             phase2();
 
 
@@ -268,7 +269,10 @@ public class BlockManager
     {
         public void run()
         {
+            System.out.println("[CharStackProber] CharStackProber thread [TID=" + this.iTID + "] starts executing.");
+
             phase1();
+            s1.Signal();
 
             try
             {
@@ -300,6 +304,8 @@ public class BlockManager
                 System.exit(1);
             }
 
+            s2.Wait();
+            s2.Signal();
             phase2();
         }
     } // class CharStackProber
