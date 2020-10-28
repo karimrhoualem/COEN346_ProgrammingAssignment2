@@ -120,7 +120,7 @@ public class BlockManager
             System.out.println("Final value of top = " + soStack.getITop() + ".");
             System.out.println("Final value of stack top = " + soStack.pick() + ".");
             System.out.println("Final value of stack top-1 = " + soStack.getAt(soStack.getITop() - 1) + ".");
-            System.out.println("Stack access count = " + soStack.getAccessCounter());
+            System.out.println("Stack access count = " + soStack.getAccessCounterStack());
 
             System.exit(0);
         }
@@ -147,7 +147,7 @@ public class BlockManager
     {
         /**
          * A copy of a block returned by pop().
-         * @see BlocStack#pop()
+         * @see BlockStack#pop()
          */
         private char cCopy;
 
