@@ -8,10 +8,8 @@ package common;
  * among all the derivatives and allow setting your own if needed.
  * Plus some methods for the sync exercises.
  *
- * $Revision: 1.4 $
- * $Last Revision Date: 2019/07/02 $
- *
- * @author Serguei A. Mokhov, mokhov@cs.concordia.ca
+ * Karim Rhoualem
+ * Student 26603157
  */
 public class BaseThread extends Thread
 {
@@ -103,18 +101,18 @@ public class BaseThread extends Thread
      */
     protected synchronized void phase1()
     {
-        System.out.println(this.getClass().getName() + " thread [TID=" + this.iTID + "] starts PHASE I.");
+        System.out.println("[BaseThread] " + this.getClass().getName() + " thread [TID=" + this.iTID + "] starts PHASE I.");
 
         System.out.println
                 (
-                        "Some stats info in the PHASE I:\n" +
+                        "[BaseThread] [" + this.getClass().getName() + "] Some stats info in the PHASE I:\n" +
                                 "    iTID = " + this.iTID +
                                 ", siNextTID = " + siNextTID +
                                 ", siTurn = " + siTurn +
                                 ".\n    Their \"checksum\": " + (siNextTID * 100 + this.iTID * 10 + siTurn)
                 );
 
-        System.out.println(this.getClass().getName() + " thread [TID=" + this.iTID + "] finishes PHASE I.");
+        System.out.println("[BaseThread] " + this.getClass().getName() + " thread [TID=" + this.iTID + "] finishes PHASE I.");
     }
 
     /**
@@ -123,18 +121,18 @@ public class BaseThread extends Thread
      */
     protected synchronized void phase2()
     {
-        System.out.println(this.getClass().getName() + " thread [TID=" + this.iTID + "] starts PHASE II.");
+        System.out.println("[BaseThread] " + this.getClass().getName() + " thread [TID=" + this.iTID + "] starts PHASE II.");
 
         System.out.println
                 (
-                        "Some stats info in the PHASE II:\n" +
+                        "[BaseThread] [" + this.getClass().getName() + "] Some stats info in the PHASE II:\n" +
                                 "    iTID = " + this.iTID +
                                 ", siNextTID = " + siNextTID +
                                 ", siTurn = " + siTurn +
                                 ".\n    Their \"checksum\": " + (siNextTID * 100 + this.iTID * 10 + siTurn)
                 );
 
-        System.out.println(this.getClass().getName() + " thread [TID=" + this.iTID + "] finishes PHASE II.");
+        System.out.println("[BaseThread] " + this.getClass().getName() + " thread [TID=" + this.iTID + "] finishes PHASE II.");
     }
 
     /**
@@ -145,7 +143,7 @@ public class BaseThread extends Thread
      *
      * @param pcIncreasingOrder true if TIDs are in increasing order; false otherwise
      *
-     * @return Returns true if if the TID of currently running thread  matches the turn, 'false' otherwise
+     * @return Returns true if the turn has changed, 'false' otherwise
      */
     public synchronized boolean turnTestAndSet(boolean pcIncreasingOrder)
     {
@@ -171,7 +169,6 @@ public class BaseThread extends Thread
     {
         return turnTestAndSet(true);
     }
-
 }
 
 // EOF

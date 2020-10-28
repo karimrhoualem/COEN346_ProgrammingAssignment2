@@ -4,10 +4,8 @@ package common;
  * Class Semaphore
  * Implements artificial semaphore built on top of Java's sync primitives.
  *
- * $Revision: 1.4 $
- * $Last Revision Date: 2019/07/02 $
- *
- * @author Serguei A. Mokhov, mokhov@cs.concordia.ca; Inspired by previous code by Prof. D. Probst
+ * Karim Rhoualem
+ * Student 26603157
  */
 public class Semaphore
 {
@@ -82,7 +80,7 @@ public class Semaphore
         {
             System.out.println
                     (
-                            "Semaphore::Wait() - caught InterruptedException: " +
+                            "[Semaphore] Semaphore::Wait() - caught InterruptedException: " +
                                     e.getMessage()
                     );
 
