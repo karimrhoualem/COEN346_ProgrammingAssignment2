@@ -37,7 +37,7 @@ public class BlockManager
     /**
      * s1 is to make sure phase I for all is done before any phase II begins
      */
-    private static Semaphore s1 = new Semaphore(-10 + 2);
+    private static Semaphore s1 = new Semaphore(-3);
 
     /**
      * s2 is for use in conjunction with Thread.turnTestAndSet() for phase II proceed
@@ -64,13 +64,13 @@ public class BlockManager
             AcquireBlock ab2 = new AcquireBlock();
             AcquireBlock ab3 = new AcquireBlock();
 
-            System.out.println("[Main] main(): Three AcquireBlock threads have been created.");
+            System.out.println("[Main] Three AcquireBlock threads have been created.");
 
             ReleaseBlock rb1 = new ReleaseBlock();
             ReleaseBlock rb2 = new ReleaseBlock();
             ReleaseBlock rb3 = new ReleaseBlock();
 
-            System.out.println("[Main] main(): Three ReleaseBlock threads have been created.");
+            System.out.println("[Main] Three ReleaseBlock threads have been created.");
 
             // Create an array object first
             CharStackProber	aStackProbers[] = new CharStackProber[NUM_PROBERS];
@@ -79,7 +79,7 @@ public class BlockManager
             for(int i = 0; i < NUM_PROBERS; i++)
                 aStackProbers[i] = new CharStackProber();
 
-            System.out.println("[Main] main(): CharStackProber threads have been created: " + NUM_PROBERS);
+            System.out.println("[Main] " + NUM_PROBERS + " CharStackProber threads have been created.");
 
             /*
              * Twist 'em all
@@ -95,7 +95,7 @@ public class BlockManager
             aStackProbers[3].start();
             rb3.start();
 
-            System.out.println("[Main] main(): All the threads are ready.");
+            System.out.println("[Main] All the threads are ready.");
 
             /*
              * Wait by here for all forked threads to die
@@ -150,39 +150,47 @@ public class BlockManager
 
         public void run()
         {
-            System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println("[AcquireBlock - Starting] AcquireBlock thread [TID=" + this.iTID + "] starts executing.");
 
             phase1();
-            s1.Signal();
+            s1.Wait("(S1) " + this.getClass().getSimpleName(), this.iTID);
+            s1.IncrementCounter();
+
+            if (s1.getCounter() == 3) {
+                System.out.println("---------------------------------------------------------------------------");
+                System.out.println("[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE I.");
+                System.out.println("---------------------------------------------------------------------------");
+            }
+
 
             try
             {
-                mutex.Wait();
+                mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
-                System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] requests Ms block.");
+                System.out.println("[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] requests Ms block.");
 
                 this.cCopy = soStack.pop();
 
                 System.out.println
                         (
-                                "[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
+                                "[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
                                         " from position " + (soStack.getITop() + 1) + "."
                         );
 
 
                 System.out.println
                         (
-                                "[AcquireBlock] Acq[TID=" + this.iTID + "]: Current value of top = " +
+                                "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of top = " +
                                         soStack.getITop() + "."
                         );
 
                 System.out.println
                         (
-                                "[AcquireBlock] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
+                                "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
                                         soStack.pick() + "."
                         );
 
-                mutex.Signal();
+                mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
             }
             catch(Exception e)
             {
@@ -190,12 +198,11 @@ public class BlockManager
                 System.exit(1);
             }
 
-            s1.Wait();
-            System.out.println("[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE I.");
-            s2.Signal();
+
+            s2.Signal(this.getClass().getSimpleName(), this.iTID);
             phase2();
 
-            System.out.println("[AcquireBlock] AcquireBlock thread [TID=" + this.iTID + "] terminates.");
+            System.out.println("[AcquireBlock - Terminating] AcquireBlock thread [TID=" + this.iTID + "] terminates.");
         }
     } // class AcquireBlock
 
@@ -212,14 +219,14 @@ public class BlockManager
 
         public void run()
         {
-            System.out.println("[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println("[ReleaseBlock - Starting] ReleaseBlock thread [TID=" + this.iTID + "] starts executing.");
 
             phase1();
-            s1.Signal();
+            s1.Signal("(S1) " + this.getClass().getSimpleName(), this.iTID);
 
             try
             {
-                mutex.Wait();
+                mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
                 if(!soStack.isEmpty()) {
                     this.cBlock = (char)(soStack.pick() + 1);
@@ -227,7 +234,7 @@ public class BlockManager
 
                 System.out.println
                         (
-                                "[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
+                                "[ReleaseBlock - CS] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
                                         " to position " + (soStack.getITop() + 1) + "."
                         );
 
@@ -235,17 +242,17 @@ public class BlockManager
 
                 System.out.println
                         (
-                                "[ReleaseBlock] Rel[TID=" + this.iTID + "]: Current value of top = " +
+                                "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of top = " +
                                         soStack.getITop() + "."
                         );
 
                 System.out.println
                         (
-                                "[ReleaseBlock] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
+                                "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
                                         soStack.pick() + "."
                         );
 
-                mutex.Signal();
+                mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
             }
             catch(Exception e)
             {
@@ -253,12 +260,12 @@ public class BlockManager
                 System.exit(1);
             }
 
-            s2.Wait();
-            s2.Signal();
+            s2.Wait("(S2) " + this.getClass().getSimpleName(), this.iTID);
+            s2.Signal("(S2) " + this.getClass().getSimpleName(), this.iTID);
             phase2();
 
 
-            System.out.println("[ReleaseBlock] ReleaseBlock thread [TID=" + this.iTID + "] terminates.");
+            System.out.println("[ReleaseBlock - Terminating] ReleaseBlock thread [TID=" + this.iTID + "] terminates.");
         }
     } // class ReleaseBlock
 
@@ -270,18 +277,18 @@ public class BlockManager
     {
         public void run()
         {
-            System.out.println("[CharStackProber] CharStackProber thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println("[CharStackProber - Starting] CharStackProber thread [TID=" + this.iTID + "] starts executing.");
 
             phase1();
-            s1.Signal();
+            s1.Signal("(S1) " + this.getClass().getSimpleName(), this.iTID);
 
             try
             {
-                mutex.Wait();
+                mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
                 for(int i = 0; i < siThreadSteps; i++)
                 {
-                    System.out.print("[CharStackProber] Stack Prober [TID=" + this.iTID + "]: Stack state: ");
+                    System.out.print("[CharStackProber - CS] Stack Prober [TID=" + this.iTID + "]: Stack state: ");
 
                     // [s] - means ordinay slot of a stack
                     // (s) - current top of the stack
@@ -297,7 +304,7 @@ public class BlockManager
 
                 }
 
-                mutex.Signal();
+                mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
             }
             catch(Exception e)
             {
@@ -305,9 +312,11 @@ public class BlockManager
                 System.exit(1);
             }
 
-            s2.Wait();
-            s2.Signal();
+            s2.Wait("(S2) " + this.getClass().getSimpleName(), this.iTID);
+            s2.Signal("(S2) " + this.getClass().getSimpleName(), this.iTID);
             phase2();
+
+            System.out.println("[CharStackProber - Terminating] CharStackProber thread [TID=" + this.iTID + "] terminates.");
         }
     } // class CharStackProber
 
