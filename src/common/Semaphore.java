@@ -14,6 +14,11 @@ public class Semaphore
      */
     private int iValue;
 
+    /**
+     * Counter used to control the output message indicating that phase 1 is complete.
+     */
+    private int counter = 0;
+
     /*
      * ------------
      * Constructors
@@ -64,8 +69,10 @@ public class Semaphore
      *
      * NOTE: This implementation as-is does not allow semaphore's value
      * to become negative.
+     * @param callingClassName
+     * @param iTID
      */
-    public synchronized void Wait()
+    public synchronized void Wait(String callingClassName, int iTID) //TODO: For debugging purposes only. Remove parameters
     {
         try
         {
@@ -75,12 +82,15 @@ public class Semaphore
             }
 
             this.iValue--;
+
+            //TODO: For debugging purposes. Comment out when done
+            //System.out.println("[Semaphore - " + callingClassName + " (TID = " + iTID + ") - Wait] iValue = " + this.iValue);
         }
         catch(InterruptedException e)
         {
             System.out.println
                     (
-                            "[Semaphore] Semaphore::Wait() - caught InterruptedException: " +
+                            "[Semaphore - " + callingClassName + " (TID = " + iTID + ") - Wait] Caught InterruptedException: " +
                                     e.getMessage()
                     );
 
@@ -95,26 +105,42 @@ public class Semaphore
      * all are simply being a little more efficient: we don't really care which
      * thread is this, any would do just fine.
      */
-    public synchronized void Signal()
+    public synchronized void Signal(String callingClassName, int iTID) //TODO: For debugging purposes only. Remove parameters
     {
         ++this.iValue;
+
+        //TODO: For debugging purposes. Comment out when done
+        //System.out.println("[Semaphore - " + callingClassName + " (TID = " + iTID + ") - Signal] iValue = " + this.iValue);
+
         notify();
     }
 
-    /**
-     * Proberen. An alias for Wait().
-     */
-    public synchronized void P()
-    {
-        this.Wait();
+//    /**
+//     * Proberen. An alias for Wait().
+//     */
+//    public synchronized void P()
+//    {
+//        this.Wait(this.getClass().getSimpleName());
+//    }
+//
+//    /**
+//     * Verhogen. An alias for Signal()
+//     */
+//    public synchronized void V()
+//    {
+//        this.Signal();
+//    }
+
+    public int getiValue() {
+        return iValue;
     }
 
-    /**
-     * Verhogen. An alias for Signal()
-     */
-    public synchronized void V()
-    {
-        this.Signal();
+    public synchronized int IncrementCounter() {
+        return ++counter;
+    }
+
+    public int getCounter() {
+        return counter;
     }
 }
 

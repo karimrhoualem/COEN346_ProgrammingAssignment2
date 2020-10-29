@@ -4,6 +4,9 @@
     <list default="true" id="11c66563-dc14-4828-afd1-7883af9eca1a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/BlockManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/BlockStack.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/BlockStack.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/common/BaseThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/common/BaseThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/common/Semaphore.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/common/Semaphore.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +40,7 @@
     <property name="project.structure.last.edited" value="SDKs" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.0" />
+    <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.editor" />
   </component>
   <component name="RunManager">
@@ -79,25 +83,100 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1852" height="1046" key="GridCell.Tab.0.bottom" timestamp="1603865325334">
+    <state x="196" y="132" key="CommitChangelistDialog2" timestamp="1603908143112">
       <screen x="62" y="0" width="1858" height="1080" />
     </state>
-    <state width="1852" height="1046" key="GridCell.Tab.0.bottom/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603865325334" />
-    <state width="1852" height="1046" key="GridCell.Tab.0.center" timestamp="1603865325333">
+    <state x="196" y="132" key="CommitChangelistDialog2/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603908143112" />
+    <state width="1852" height="1046" key="GridCell.Tab.-1.bottom" timestamp="1603917893462">
       <screen x="62" y="0" width="1858" height="1080" />
     </state>
-    <state width="1852" height="1046" key="GridCell.Tab.0.center/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603865325333" />
-    <state width="1852" height="1046" key="GridCell.Tab.0.left" timestamp="1603865325333">
+    <state width="1852" height="1046" key="GridCell.Tab.-1.bottom/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603917893462" />
+    <state width="1852" height="1046" key="GridCell.Tab.-1.center" timestamp="1603917893462">
       <screen x="62" y="0" width="1858" height="1080" />
     </state>
-    <state width="1852" height="1046" key="GridCell.Tab.0.left/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603865325333" />
-    <state width="1852" height="1046" key="GridCell.Tab.0.right" timestamp="1603865325334">
+    <state width="1852" height="1046" key="GridCell.Tab.-1.center/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603917893462" />
+    <state width="1852" height="1046" key="GridCell.Tab.-1.left" timestamp="1603917893462">
       <screen x="62" y="0" width="1858" height="1080" />
     </state>
-    <state width="1852" height="1046" key="GridCell.Tab.0.right/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603865325334" />
+    <state width="1852" height="1046" key="GridCell.Tab.-1.left/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603917893462" />
+    <state width="1852" height="1046" key="GridCell.Tab.-1.right" timestamp="1603917893462">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.-1.right/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603917893462" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.bottom" timestamp="1603934297933">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.0.bottom/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603934297933" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.bottom/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603908756065" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.center" timestamp="1603934297933">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.0.center/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603934297933" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.center/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603908756064" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.left" timestamp="1603934297933">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.0.left/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603934297933" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.left/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603908756064" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.right" timestamp="1603934297933">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.0.right/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603934297933" />
+    <state width="1852" height="1046" key="GridCell.Tab.0.right/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603908756065" />
+    <state width="1852" height="1046" key="GridCell.Tab.1.bottom" timestamp="1603929085939">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.1.bottom/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603929085939" />
+    <state width="1852" height="1046" key="GridCell.Tab.1.center" timestamp="1603929085939">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.1.center/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603929085939" />
+    <state width="1852" height="1046" key="GridCell.Tab.1.left" timestamp="1603929085939">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.1.left/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603929085939" />
+    <state width="1852" height="1046" key="GridCell.Tab.1.right" timestamp="1603929085939">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state width="1852" height="1046" key="GridCell.Tab.1.right/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603929085939" />
     <state x="492" y="183" key="SettingsEditor" timestamp="1603845235033">
       <screen x="62" y="0" width="1858" height="1080" />
     </state>
     <state x="492" y="183" key="SettingsEditor/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603845235033" />
+    <state x="567" y="277" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2" timestamp="1603917815889">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state x="567" y="277" key="com.intellij.xdebugger.impl.breakpoints.ui.BreakpointsDialogFactory$2/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603917815889" />
+    <state x="-1671" y="-14" width="1546" height="1065" maximized="true" key="dock-window-1" timestamp="1603929334328">
+      <screen x="-1858" y="0" width="1858" height="1080" />
+    </state>
+    <state x="-1671" y="-14" width="1546" height="1065" maximized="true" key="dock-window-1/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603929334328" />
+    <state x="2006" y="-24" width="1561" height="1065" maximized="true" key="dock-window-2" timestamp="1603931480236">
+      <screen x="1982" y="0" width="1858" height="1080" />
+    </state>
+    <state x="2006" y="-24" width="1561" height="1065" maximized="true" key="dock-window-2/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603931480236" />
+    <state x="-955" y="153" width="607" height="804" key="find.popup" timestamp="1603915757303">
+      <screen x="-1858" y="0" width="1858" height="1080" />
+    </state>
+    <state x="-955" y="153" width="607" height="804" key="find.popup/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603915757303" />
+    <state x="697" y="169" key="refactoring.ChangeSignatureDialog" timestamp="1603907547170">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state x="697" y="169" key="refactoring.ChangeSignatureDialog/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603907547170" />
+    <state x="647" y="250" key="run.anything.popup" timestamp="1603907054757">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state x="647" y="250" key="run.anything.popup/-1858.0.1858.1080/62.0.1858.1080/1982.0.1858.1080@62.0.1858.1080" timestamp="1603907054757" />
+    <state x="654" y="235" width="672" height="678" key="search.everywhere.popup" timestamp="1603920286446">
+      <screen x="62" y="0" width="1858" height="1080" />
+    </state>
+    <state x="654" y="235" width="672" height="678" key="search.everywhere.popup/-1858.0.1858.1080/1982.0.1858.1080/62.0.1858.1080@62.0.1858.1080" timestamp="1603920286446" />
+  </component>
+  <component name="XDebuggerManager">
+    <watches-manager>
+      <configuration name="Application">
+        <watch expression="turnTestAndSet()" language="JAVA" />
+      </configuration>
+    </watches-manager>
   </component>
 </project>

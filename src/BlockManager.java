@@ -10,6 +10,11 @@ import common.*;
  */
 public class BlockManager
 {
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_PURPLE = "\u001B[35m";
+
     /**
      * The stack itself
      */
@@ -43,7 +48,7 @@ public class BlockManager
      * s2 is for use in conjunction with Thread.turnTestAndSet() for phase II proceed
      * in the thread creation order
      */
-    private static Semaphore s2 = new Semaphore();
+    private static Semaphore s2 = new Semaphore(0);
 
 
     // The main()
@@ -118,6 +123,18 @@ public class BlockManager
             System.out.println("[Main] Final value of stack top = " + soStack.pick() + ".");
             System.out.println("[Main] Final value of stack top-1 = " + soStack.getAt(soStack.getITop() - 1) + ".");
             System.out.println("[Main] Stack access count = " + soStack.getStackAccessCounter());
+            System.out.print("[Main] Final stack: ");
+            // [s] - means ordinay slot of a stack
+            // (s) - current top of the stack
+            for(int s = 0; s < soStack.getISize(); s++)
+                System.out.print
+                        (
+                                ANSI_YELLOW + (s == BlockManager.soStack.getITop() ? "(" : "[") +
+                                        BlockManager.soStack.getAt(s) +
+                                        (s == BlockManager.soStack.getITop() ? ")" : "]") + ANSI_RESET
+                        );
+
+            System.out.println(ANSI_YELLOW + "." + ANSI_RESET);
 
             System.exit(0);
         }
@@ -150,44 +167,54 @@ public class BlockManager
 
         public void run()
         {
-            System.out.println("[AcquireBlock - Starting] AcquireBlock thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println(ANSI_GREEN + "[AcquireBlock - Starting] AcquireBlock thread [TID=" + this.iTID + "] starts executing." + ANSI_RESET);
 
             phase1();
             s1.Wait("(S1) " + this.getClass().getSimpleName(), this.iTID);
             s1.IncrementCounter();
 
             if (s1.getCounter() == 3) {
-                System.out.println("---------------------------------------------------------------------------");
-                System.out.println("[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE I.");
-                System.out.println("---------------------------------------------------------------------------");
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE I." + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
             }
-
 
             try
             {
                 mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
-                System.out.println("[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] requests Ms block.");
+                System.out.println(ANSI_GREEN + "[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] requests Ms block." + ANSI_RESET);
 
-                this.cCopy = soStack.pop();
+                /**
+                 * Check to see if the stack is empty. If so, do not pop anything. Just print out information about stack.
+                 */
+                if (soStack.isEmpty()) {
+                    System.out.println(ANSI_GREEN + "[AcquireBlock - CS] Stack is empty. Did not perform pop.");
+                    System.out.println
+                            (
+                                    ANSI_GREEN + "[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
+                                            " from position " + (soStack.getITop()) + "." + ANSI_RESET
+                            );
+                }
+                else {
+                    this.cCopy = soStack.pop();
+                    System.out.println
+                            (
+                                    ANSI_GREEN + "[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
+                                            " from position " + (soStack.getITop() + 1) + "." + ANSI_RESET
+                            );
+                }
 
                 System.out.println
                         (
-                                "[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] has obtained Ms block " + this.cCopy +
-                                        " from position " + (soStack.getITop() + 1) + "."
+                                ANSI_GREEN + "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of top = " +
+                                        soStack.getITop() + "." + ANSI_RESET
                         );
 
-
                 System.out.println
                         (
-                                "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of top = " +
-                                        soStack.getITop() + "."
-                        );
-
-                System.out.println
-                        (
-                                "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
-                                        soStack.pick() + "."
+                                ANSI_GREEN + "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
+                                        soStack.pick() + "." + ANSI_RESET
                         );
 
                 mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
@@ -198,11 +225,16 @@ public class BlockManager
                 System.exit(1);
             }
 
-
             s2.Signal(this.getClass().getSimpleName(), this.iTID);
-            phase2();
+            while (!turnTestAndSet(true));
 
-            System.out.println("[AcquireBlock - Terminating] AcquireBlock thread [TID=" + this.iTID + "] terminates.");
+            System.out.println(ANSI_GREEN + "[AcquireBlock - Terminating] AcquireBlock thread [TID=" + this.iTID + "] terminates." + ANSI_RESET);
+
+            if (this.iTID == 10) {
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE II." + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+            }
         }
     } // class AcquireBlock
 
@@ -219,7 +251,7 @@ public class BlockManager
 
         public void run()
         {
-            System.out.println("[ReleaseBlock - Starting] ReleaseBlock thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println(ANSI_PURPLE + "[ReleaseBlock - Starting] ReleaseBlock thread [TID=" + this.iTID + "] starts executing." + ANSI_RESET);
 
             phase1();
             s1.Signal("(S1) " + this.getClass().getSimpleName(), this.iTID);
@@ -228,28 +260,37 @@ public class BlockManager
             {
                 mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
+                /**
+                 * If the stack is not empty, get the next char and push it to next open position.
+                 * If the stack is full, don't push anything. Log the message and just display the stack the way it was before.
+                 */
                 if(!soStack.isEmpty()) {
-                    this.cBlock = (char)(soStack.pick() + 1);
+                    if (soStack.isFull()) {
+                        this.cBlock = soStack.pick();
+                        System.out.println(ANSI_PURPLE + "[ReleaseBlock - CS] Stack is full. Not pushing new value to stack." + ANSI_RESET);
+                    }
+                    else {
+                        this.cBlock = (char)(soStack.pick() + 1);
+                        soStack.push(this.cBlock);
+                    }
                 }
 
                 System.out.println
                         (
-                                "[ReleaseBlock - CS] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
-                                        " to position " + (soStack.getITop() + 1) + "."
-                        );
-
-                soStack.push(this.cBlock);
-
-                System.out.println
-                        (
-                                "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of top = " +
-                                        soStack.getITop() + "."
+                                ANSI_PURPLE + "[ReleaseBlock - CS] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
+                                        " to position " + (soStack.getITop()) + "." + ANSI_RESET
                         );
 
                 System.out.println
                         (
-                                "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
-                                        soStack.pick() + "."
+                                ANSI_PURPLE + "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of top = " +
+                                        soStack.getITop() + "." + ANSI_RESET
+                        );
+
+                System.out.println
+                        (
+                                ANSI_PURPLE + "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
+                                        soStack.pick() + "." + ANSI_RESET
                         );
 
                 mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
@@ -260,12 +301,18 @@ public class BlockManager
                 System.exit(1);
             }
 
+
             s2.Wait("(S2) " + this.getClass().getSimpleName(), this.iTID);
             s2.Signal("(S2) " + this.getClass().getSimpleName(), this.iTID);
-            phase2();
+            while (!turnTestAndSet(true));
 
+            System.out.println(ANSI_PURPLE + "[ReleaseBlock - Terminating] ReleaseBlock thread [TID=" + this.iTID + "] terminates." + ANSI_RESET);
 
-            System.out.println("[ReleaseBlock - Terminating] ReleaseBlock thread [TID=" + this.iTID + "] terminates.");
+            if (this.iTID == 10) {
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE II." + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+            }
         }
     } // class ReleaseBlock
 
@@ -277,7 +324,7 @@ public class BlockManager
     {
         public void run()
         {
-            System.out.println("[CharStackProber - Starting] CharStackProber thread [TID=" + this.iTID + "] starts executing.");
+            System.out.println(ANSI_YELLOW + "[CharStackProber - Starting] CharStackProber thread [TID=" + this.iTID + "] starts executing." + ANSI_RESET);
 
             phase1();
             s1.Signal("(S1) " + this.getClass().getSimpleName(), this.iTID);
@@ -288,19 +335,19 @@ public class BlockManager
 
                 for(int i = 0; i < siThreadSteps; i++)
                 {
-                    System.out.print("[CharStackProber - CS] Stack Prober [TID=" + this.iTID + "]: Stack state: ");
+                    System.out.print(ANSI_YELLOW + "[CharStackProber - CS] Stack Prober [TID=" + this.iTID + "]: Stack state: " + ANSI_RESET);
 
                     // [s] - means ordinay slot of a stack
                     // (s) - current top of the stack
                     for(int s = 0; s < soStack.getISize(); s++)
                         System.out.print
                                 (
-                                        (s == BlockManager.soStack.getITop() ? "(" : "[") +
+                                        ANSI_YELLOW + (s == BlockManager.soStack.getITop() ? "(" : "[") +
                                                 BlockManager.soStack.getAt(s) +
-                                                (s == BlockManager.soStack.getITop() ? ")" : "]")
+                                                (s == BlockManager.soStack.getITop() ? ")" : "]") + ANSI_RESET
                                 );
 
-                    System.out.println(".");
+                    System.out.println(ANSI_YELLOW + "." + ANSI_RESET);
 
                 }
 
@@ -312,11 +359,18 @@ public class BlockManager
                 System.exit(1);
             }
 
+
             s2.Wait("(S2) " + this.getClass().getSimpleName(), this.iTID);
             s2.Signal("(S2) " + this.getClass().getSimpleName(), this.iTID);
-            phase2();
+            while (!turnTestAndSet(true));
 
-            System.out.println("[CharStackProber - Terminating] CharStackProber thread [TID=" + this.iTID + "] terminates.");
+            System.out.println(ANSI_YELLOW + "[CharStackProber - Terminating] CharStackProber thread [TID=" + this.iTID + "] terminates." + ANSI_RESET);
+
+            if (this.iTID == 10) {
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE II." + ANSI_RESET);
+                System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
+            }
         }
     } // class CharStackProber
 

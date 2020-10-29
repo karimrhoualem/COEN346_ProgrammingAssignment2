@@ -6,6 +6,10 @@
  * Student 26603157
  */
 class BlockStack {
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String ANSI_WHITE = "\u001B[37m";
+
     /**
      * # of letters in the English alphabet + 2
      */
@@ -22,8 +26,9 @@ class BlockStack {
     private int iSize = DEFAULT_SIZE;
 
     /**
-     * Current top position of the stack (this means the stack is empty (well, technically it has
-     * the two stars - which represents empty spaces in the array.))
+     * Current top position of the stack (a value (index) of 3 means that the stack has 'a', 'b', 'c', and 'd'
+     * currently in the stack (well, technically it goes up to an index of 5 because it has the two stars as well -
+     * which represents empty spaces in the array.))
      */
     private int iTop = 3;
 
@@ -88,14 +93,8 @@ class BlockStack {
      * Standard push operation
      */
     public void push(final char character) {
-        if (isEmpty()) {
-            this.accessCounterStack[++this.iTop] = 'a';
-            System.out.println("[BlockStack] Stack was previously empty. Character 'a' has been pushed to stack.");
-        }
-        else {
-            this.accessCounterStack[++this.iTop] = character;
-            System.out.println("[BlockStack] " + character + " has been pushed to the stack.");
-        }
+        this.accessCounterStack[++this.iTop] = character;
+        System.out.println(ANSI_CYAN + "[BlockStack] " + character + " has been pushed to the stack." + ANSI_RESET);
         stackAccessCounter++;
     }
 
@@ -105,16 +104,11 @@ class BlockStack {
      * @return ex-top element of the stack, char
      */
     public char pop() {
-        if (isEmpty()) {
-            System.out.println("[BlockStack] Cannot pop from an empty stack. Returning an empty char.");
-            return ' ';
-        }
-
-        char character = this.accessCounterStack[this.iTop];
-        this.accessCounterStack[this.iTop--] = '*'; // Leave prev. value undefined
-        stackAccessCounter++;
-        System.out.println("[BlockStack] " + character + " has been popped from the stack.");
-        return character;
+            char character = this.accessCounterStack[this.iTop];
+            this.accessCounterStack[this.iTop--] = '*'; // Leave prev. value undefined
+            stackAccessCounter++;
+            System.out.println(ANSI_CYAN + "[BlockStack] " + character + " has been popped from the stack." + ANSI_RESET);
+            return character;
     }
 
     /**
@@ -147,6 +141,10 @@ class BlockStack {
      */
     public boolean isEmpty() {
         return this.iTop == -1;
+    }
+
+    public boolean isFull() {
+        return (this.iTop + 1) == this.iSize;
     }
 
     /**
