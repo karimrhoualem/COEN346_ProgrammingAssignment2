@@ -1,4 +1,3 @@
-// Import (aka include) some stuff.
 import common.*;
 
 /**
@@ -10,6 +9,10 @@ import common.*;
  */
 public class BlockManager
 {
+    /*
+     * Declaration of ANSI color codes that are used in the console logs
+     * to improve readability by assigning a color code to each class within the program.
+     */
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_GREEN = "\u001B[32m";
     public static final String ANSI_YELLOW = "\u001B[33m";
@@ -30,25 +33,36 @@ public class BlockManager
      */
     private static int siThreadSteps = 5;
 
+
     /**
      * For atomicity
      */
     private static Semaphore mutex = new Semaphore(1);
 
-    /*
-     * For synchronization
-     */
-
+    // -------------------------------- For synchronization --------------------------------------
     /**
      * s1 is to make sure phase I for all is done before any phase II begins
+     *
+     * The AcquireBlock class is waiting on s1. This means that the ReleaseBlock (3 threads created)
+     * and CharStackProber (4 threads created) classes will signal s1 7 times, bringing the s1 value
+     * from -3 to 4. Then, the AcquireBlock (3 threads created) class will be able to pass through
+     * each wait statement and proceed to the critical section and phase 2. This is what allows us
+     * to control the completion of phase 1 before any phase 2 begins.
      */
     private static Semaphore s1 = new Semaphore(-3);
 
     /**
      * s2 is for use in conjunction with Thread.turnTestAndSet() for phase II proceed
      * in the thread creation order
+     *
+     * The s2 value is set to 0 and only signals for the first time in the AcquireBlock class.
+     * In the ReleaseBlock and CharStackProber classes, they initially wait and THEN signal s2.
+     * This allows us to synchronize with the semaphore s1 and ensure that all the phase 1's
+     * finish before any of the the phase 2's begin. this also serves as the starting point for
+     * controlling the ordered execution of the phase 2's in increasing thread ID order.
      */
     private static Semaphore s2 = new Semaphore(0);
+    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ For synchronization ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
     // The main()
@@ -124,16 +138,20 @@ public class BlockManager
             System.out.println("[Main] Final value of stack top-1 = " + soStack.getAt(soStack.getITop() - 1) + ".");
             System.out.println("[Main] Stack access count = " + soStack.getStackAccessCounter());
             System.out.print("[Main] Final stack: ");
-            // [s] - means ordinay slot of a stack
-            // (s) - current top of the stack
-            for(int s = 0; s < soStack.getISize(); s++)
-                System.out.print
-                        (
-                                ANSI_YELLOW + (s == BlockManager.soStack.getITop() ? "(" : "[") +
-                                        BlockManager.soStack.getAt(s) +
-                                        (s == BlockManager.soStack.getITop() ? ")" : "]") + ANSI_RESET
-                        );
 
+            /*
+             * Prints the final stack contents to confirm functionality of the program.
+             * [s] - means ordinary slot of a stack
+             * (s) - current top of the stack
+             */
+            for(int s = 0; s < soStack.getISize(); s++) {
+                System.out.print
+                    (
+                            ANSI_YELLOW + (s == BlockManager.soStack.getITop() ? "(" : "[") +
+                                    BlockManager.soStack.getAt(s) +
+                                    (s == BlockManager.soStack.getITop() ? ")" : "]") + ANSI_RESET
+                    );
+            }
             System.out.println(ANSI_YELLOW + "." + ANSI_RESET);
 
             System.exit(0);
@@ -165,14 +183,25 @@ public class BlockManager
          */
         private char cCopy;
 
+        @Override
         public void run()
         {
             System.out.println(ANSI_GREEN + "[AcquireBlock - Starting] AcquireBlock thread [TID=" + this.iTID + "] starts executing." + ANSI_RESET);
 
+            // Run phase 1 in its entirety asynchronously with the other executing threads
             phase1();
-            s1.Wait("(S1) " + this.getClass().getSimpleName(), this.iTID);
-            s1.IncrementCounter();
 
+            /*
+             * Wait for the other threads from ReleaseBlock and CharStackProber to signal so that
+             * AcquireBlock can pass.
+             */
+            s1.Wait("(S1) " + this.getClass().getSimpleName(), this.iTID);
+
+            /*
+             * Counter used to keep track of final AcquireBlock thread to execute. When this one executes,
+             * log to the console that all Phase 1's have been completed.
+             */
+            s1.IncrementCounter();
             if (s1.getCounter() == 3) {
                 System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
                 System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE I." + ANSI_RESET);
@@ -181,13 +210,14 @@ public class BlockManager
 
             try
             {
+                //----------------------------------------- CRITICAL SECTION ------------------------------------------------------
+
+                // Use the mutex semaphore to block access to the critical section that accesses the stack.
                 mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
                 System.out.println(ANSI_GREEN + "[AcquireBlock - CS] AcquireBlock thread [TID=" + this.iTID + "] requests Ms block." + ANSI_RESET);
 
-                /**
-                 * Check to see if the stack is empty. If so, do not pop anything. Just print out information about stack.
-                 */
+                // Check to see if the stack is empty. If so, do not pop anything. Just print out information about stack.
                 if (soStack.isEmpty()) {
                     System.out.println(ANSI_GREEN + "[AcquireBlock - CS] Stack is empty. Did not perform pop.");
                     System.out.println
@@ -196,6 +226,7 @@ public class BlockManager
                                             " from position " + (soStack.getITop()) + "." + ANSI_RESET
                             );
                 }
+                // If the stack isn't empty, pop the top value from teh stack.
                 else {
                     this.cCopy = soStack.pop();
                     System.out.println
@@ -205,19 +236,22 @@ public class BlockManager
                             );
                 }
 
+                // Print information about the stack after the pop operation
                 System.out.println
-                        (
-                                ANSI_GREEN + "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of top = " +
-                                        soStack.getITop() + "." + ANSI_RESET
-                        );
-
+                    (
+                            ANSI_GREEN + "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of top = " +
+                                    soStack.getITop() + "." + ANSI_RESET
+                    );
                 System.out.println
-                        (
-                                ANSI_GREEN + "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
-                                        soStack.pick() + "." + ANSI_RESET
-                        );
+                    (
+                            ANSI_GREEN + "[AcquireBlock - CS] Acq[TID=" + this.iTID + "]: Current value of stack top = " +
+                                    soStack.pick() + "." + ANSI_RESET
+                    );
 
+                // Use the mutex semaphore to signal to the other threads that the stack can now be accessed.
                 mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
+
+                //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ CRITICAL SECTION ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             }
             catch(Exception e)
             {
@@ -225,11 +259,23 @@ public class BlockManager
                 System.exit(1);
             }
 
+            /*
+             * AcquireBlock class serves as the starting point for beginning Phase 2 for each thread.
+             * The first signal will emanate from this class and let the ReleaseBlock and CharStackProber classes
+             * know that they can try to start Phase 2.
+             */
             s2.Signal(this.getClass().getSimpleName(), this.iTID);
+
+            /*
+             * Keeps the current thread busy waiting until turnTestAndSet returns false, indicating that it is that
+             * Thread's turn to execute Phase 2 next. The threads are scheduled to proceed in increasing order
+             * according to thread ID.
+             */
             while (!turnTestAndSet(true));
 
             System.out.println(ANSI_GREEN + "[AcquireBlock - Terminating] AcquireBlock thread [TID=" + this.iTID + "] terminates." + ANSI_RESET);
 
+            // If thread with ID = 10 (the final thread) ends up in this class, log to console that all phase 2's are completed.
             if (this.iTID == 10) {
                 System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
                 System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE II." + ANSI_RESET);
@@ -249,18 +295,25 @@ public class BlockManager
          */
         private char cBlock = 'a';
 
+        @Override
         public void run()
         {
             System.out.println(ANSI_PURPLE + "[ReleaseBlock - Starting] ReleaseBlock thread [TID=" + this.iTID + "] starts executing." + ANSI_RESET);
 
+            // Run phase 1 in its entirety asynchronously with the other executing threads
             phase1();
+
+            // Increase s1's semaphore value so that AcquireBlock class can eventually proceed past its wait() state.
             s1.Signal("(S1) " + this.getClass().getSimpleName(), this.iTID);
 
             try
             {
+                //----------------------------------------- CRITICAL SECTION ------------------------------------------------------
+
+                // Use the mutex semaphore to block access to the critical section that accesses the stack.
                 mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
-                /**
+                /*
                  * If the stack is not empty, get the next char and push it to next open position.
                  * If the stack is full, don't push anything. Log the message and just display the stack the way it was before.
                  */
@@ -275,25 +328,27 @@ public class BlockManager
                     }
                 }
 
+                // Print information about the stack after the push operation
                 System.out.println
-                        (
-                                ANSI_PURPLE + "[ReleaseBlock - CS] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
-                                        " to position " + (soStack.getITop()) + "." + ANSI_RESET
-                        );
-
+                    (
+                            ANSI_PURPLE + "[ReleaseBlock - CS] ReleaseBlock thread [TID=" + this.iTID + "] returns Ms block " + this.cBlock +
+                                    " to position " + (soStack.getITop()) + "." + ANSI_RESET
+                    );
                 System.out.println
-                        (
-                                ANSI_PURPLE + "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of top = " +
-                                        soStack.getITop() + "." + ANSI_RESET
-                        );
-
+                    (
+                            ANSI_PURPLE + "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of top = " +
+                                    soStack.getITop() + "." + ANSI_RESET
+                    );
                 System.out.println
-                        (
-                                ANSI_PURPLE + "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
-                                        soStack.pick() + "." + ANSI_RESET
-                        );
+                    (
+                            ANSI_PURPLE + "[ReleaseBlock - CS] Rel[TID=" + this.iTID + "]: Current value of stack top = " +
+                                    soStack.pick() + "." + ANSI_RESET
+                    );
 
+                // Use the mutex semaphore to signal to the other threads that the stack can now be accessed.
                 mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
+
+                //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ CRITICAL SECTION ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             }
             catch(Exception e)
             {
@@ -301,13 +356,26 @@ public class BlockManager
                 System.exit(1);
             }
 
-
+            /*
+             * s2 semaphore waits for its first signal to ensure that all phase 1's are completed before
+             * trying to execute any of the phase 2's. The order of the signal may be random. It will depend
+             * on the order of execution of the threads.
+             */
             s2.Wait("(S2) " + this.getClass().getSimpleName(), this.iTID);
+
+            // Signal to the next thread waiting for s2 to be equal to 1 that it can now pass.
             s2.Signal("(S2) " + this.getClass().getSimpleName(), this.iTID);
+
+            /*
+             * Keeps the current thread busy waiting until turnTestAndSet returns false, indicating that it is that
+             * Thread's turn to execute Phase 2 next. The threads are scheduled to proceed in increasing order
+             * according to thread ID.
+             */
             while (!turnTestAndSet(true));
 
             System.out.println(ANSI_PURPLE + "[ReleaseBlock - Terminating] ReleaseBlock thread [TID=" + this.iTID + "] terminates." + ANSI_RESET);
 
+            // If thread with ID = 10 (the final thread) ends up in this class, log to console that all phase 2's are completed.
             if (this.iTID == 10) {
                 System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
                 System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE II." + ANSI_RESET);
@@ -322,36 +390,49 @@ public class BlockManager
      */
     static class CharStackProber extends BaseThread
     {
+        @Override
         public void run()
         {
             System.out.println(ANSI_YELLOW + "[CharStackProber - Starting] CharStackProber thread [TID=" + this.iTID + "] starts executing." + ANSI_RESET);
 
+            // Run phase 1 in its entirety asynchronously with the other executing threads
             phase1();
+
+            // Increase s1's semaphore value so that AcquireBlock class can eventually proceed past its wait() state.
             s1.Signal("(S1) " + this.getClass().getSimpleName(), this.iTID);
 
             try
             {
+                //----------------------------------------- CRITICAL SECTION ------------------------------------------------------
+
+                // Use the mutex semaphore to block access to the critical section that accesses the stack.
                 mutex.Wait("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
 
                 for(int i = 0; i < siThreadSteps; i++)
                 {
                     System.out.print(ANSI_YELLOW + "[CharStackProber - CS] Stack Prober [TID=" + this.iTID + "]: Stack state: " + ANSI_RESET);
 
-                    // [s] - means ordinay slot of a stack
-                    // (s) - current top of the stack
-                    for(int s = 0; s < soStack.getISize(); s++)
+                    /*
+                     * Prints the stack contents to confirm functionality of the program.
+                     * [s] - means ordinary slot of a stack
+                     * (s) - current top of the stack
+                     */
+                    for(int s = 0; s < soStack.getISize(); s++) {
                         System.out.print
-                                (
-                                        ANSI_YELLOW + (s == BlockManager.soStack.getITop() ? "(" : "[") +
-                                                BlockManager.soStack.getAt(s) +
-                                                (s == BlockManager.soStack.getITop() ? ")" : "]") + ANSI_RESET
-                                );
+                            (
+                                    ANSI_YELLOW + (s == BlockManager.soStack.getITop() ? "(" : "[") +
+                                            BlockManager.soStack.getAt(s) +
+                                            (s == BlockManager.soStack.getITop() ? ")" : "]") + ANSI_RESET
+                            );
+                    }
 
                     System.out.println(ANSI_YELLOW + "." + ANSI_RESET);
-
                 }
 
+                // Use the mutex semaphore to signal to the other threads that the stack can now be accessed.
                 mutex.Signal("(Mutex) " + this.getClass().getSimpleName(), this.iTID);
+
+                //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ CRITICAL SECTION ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             }
             catch(Exception e)
             {
@@ -359,13 +440,26 @@ public class BlockManager
                 System.exit(1);
             }
 
-
+            /*
+             * s2 semaphore waits for its first signal to ensure that all phase 1's are completed before
+             * trying to execute any of the phase 2's. The order of the signal may be random. It will depend
+             * on the order of execution of the threads.
+             */
             s2.Wait("(S2) " + this.getClass().getSimpleName(), this.iTID);
+
+            // Signal to the next thread waiting for s2 to be equal to 1 that it can now pass.
             s2.Signal("(S2) " + this.getClass().getSimpleName(), this.iTID);
+
+            /*
+             * Keeps the current thread busy waiting until turnTestAndSet returns false, indicating that it is that
+             * Thread's turn to execute Phase 2 next. The threads are scheduled to proceed in increasing order
+             * according to thread ID.
+             */
             while (!turnTestAndSet(true));
 
             System.out.println(ANSI_YELLOW + "[CharStackProber - Terminating] CharStackProber thread [TID=" + this.iTID + "] terminates." + ANSI_RESET);
 
+            // If thread with ID = 10 (the final thread) ends up in this class, log to console that all phase 2's are completed.
             if (this.iTID == 10) {
                 System.out.println(ANSI_GREEN + "---------------------------------------------------------------------------" + ANSI_RESET);
                 System.out.println(ANSI_GREEN + "[AcquireBlock] ALL THREADS HAVE COMPLETED PHASE II." + ANSI_RESET);

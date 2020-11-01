@@ -6,6 +6,10 @@
  * Student 26603157
  */
 class BlockStack {
+    /*
+     * Declaration of ANSI color codes that are used in the console logs
+     * to improve readability by assigning a color code to each class within the program.
+     */
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
@@ -52,6 +56,11 @@ class BlockStack {
      * Supplied size for process i
      */
     public BlockStack(final int piSize) {
+        if (piSize > 28) {
+            System.out.println("Please enter a maximum stack size of 28 in order to" +
+                    " to stay within the bounds of the english alphabet.");
+            System.exit(0);
+        }
         if (piSize != DEFAULT_SIZE) {
             this.accessCounterStack = new char[piSize];
 

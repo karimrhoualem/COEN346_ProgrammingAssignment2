@@ -89,10 +89,10 @@ public class Semaphore
         catch(InterruptedException e)
         {
             System.out.println
-                    (
-                            "[Semaphore - " + callingClassName + " (TID = " + iTID + ") - Wait] Caught InterruptedException: " +
-                                    e.getMessage()
-                    );
+                (
+                        "[Semaphore - " + callingClassName + " (TID = " + iTID + ") - Wait] Caught InterruptedException: " +
+                                e.getMessage()
+                );
 
             e.printStackTrace();
         }
@@ -131,14 +131,27 @@ public class Semaphore
 //        this.Signal();
 //    }
 
+    /**
+     * Gets the current semaphore's value to display in the console.
+     * @return The integer value of the semaphore.
+     */
     public int getiValue() {
         return iValue;
     }
 
+    /**
+     * Increments and gets the counter used to keep track of the number of semaphores that have been used
+     * so that a log message can be displayed in the console.
+     * @return The integer value of the counter.
+     */
     public synchronized int IncrementCounter() {
         return ++counter;
     }
 
+    /**
+     * Gets the counter value
+     * @return Integer value of the counter.
+     */
     public int getCounter() {
         return counter;
     }

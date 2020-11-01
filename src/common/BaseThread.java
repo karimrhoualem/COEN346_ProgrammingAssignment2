@@ -13,9 +13,14 @@ package common;
  */
 public class BaseThread extends Thread
 {
+    /*
+     * Declaration of ANSI color codes that are used in the console logs
+     * to improve readability by assigning a color code to each class within the program.
+     */
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLUE = "\u001B[34m";
     public static final String ANSI_RED = "\u001B[31m";
+
     /*
      * ------------
      * Data members
@@ -145,6 +150,9 @@ public class BaseThread extends Thread
         System.out.println(ANSI_BLUE + "[BaseThread - " + this.getClass().getSimpleName() + " - PHASE 2] " + "Thread [TID=" + this.iTID + "] finishes PHASE II." + ANSI_RESET);
     }
 
+    // Semaphore used to ensure that field siTurn is incremented by each thread independently.
+    private static Semaphore test = new Semaphore(1);
+
     /**
      * Test-and-Set for the iTurn variable.
      *
@@ -155,10 +163,10 @@ public class BaseThread extends Thread
      *
      * @return Returns true if the turn has changed, 'false' otherwise
      */
-    private static Semaphore test = new Semaphore(1);
-
     public synchronized boolean turnTestAndSet(boolean pcIncreasingOrder)
     {
+        //----------------------------------------- CRITICAL SECTION ------------------------------------------------------
+
         test.Wait(this.getClass().getSimpleName(), this.iTID);
         // test
         if(siTurn == this.iTID)
@@ -173,6 +181,7 @@ public class BaseThread extends Thread
             else {
                 siTurn--;
             }
+
         test.Signal(this.getClass().getSimpleName(), this.iTID);
             return true;
         }
@@ -183,7 +192,11 @@ public class BaseThread extends Thread
 
             printedWaitMessage = true;
         }
+
         test.Signal(this.getClass().getSimpleName(), this.iTID);
+
+        //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ CRITICAL SECTION ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
         return false;
     }
 
